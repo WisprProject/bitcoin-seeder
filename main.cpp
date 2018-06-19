@@ -401,13 +401,12 @@ extern "C" void* ThreadStats(void*) {
 }
 
 static const string mainnet_seeds[] = {"dnsseed.wispr.tech", ""};
-static const string testnet_seeds[] = {"testnet-seed.wispr.tech",
-                                       ""};
+static const string testnet_seeds[] = {"testnet-seed.wispr.tech", ""};
 static const string *seeds = mainnet_seeds;
 
 extern "C" void* ThreadSeeder(void*) {
   if (!fTestNet){
-    db.Add(CService("kjy2eqzk4zwi5zd3.onion", 17000), true);
+    db.Add(CService("54.229.67.146", 17000), true);
   }
   do {
     for (int i=0; seeds[i] != ""; i++) {
