@@ -400,8 +400,8 @@ extern "C" void* ThreadStats(void*) {
   return nullptr;
 }
 
-static const string mainnet_seeds[] = {"dnsseed.wispr.tech", "54.229.67.146", ""};
-static const string testnet_seeds[] = {"testnet-seed.wispr.tech", ""};
+static const string mainnet_seeds[] = {"dnsseed.wispr.tech", "main.wispr-seeds.nl", "54.229.67.146", ""};
+static const string testnet_seeds[] = {"testnet-seed.wispr.tech", "test.wispr-seeds.nl" ,""};
 static const string *seeds = mainnet_seeds;
 
 extern "C" void* ThreadSeeder(void*) {
