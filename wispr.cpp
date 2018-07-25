@@ -6,7 +6,7 @@
 #include "serialize.h"
 #include "uint256.h"
 
-#define BITCOIN_SEED_NONCE  0x0539a019ca550825ULL
+#define WISPR_SEED_NONCE  0x0539a019ca550825ULL
 
 using namespace std;
 
@@ -75,7 +75,7 @@ class CNode {
   
   void PushVersion() {
     int64 nTime = time(NULL);
-    uint64 nLocalNonce = BITCOIN_SEED_NONCE;
+    uint64 nLocalNonce = WISPR_SEED_NONCE;
     int64 nLocalServices = 0;
     CAddress me(CService("0.0.0.0"));
     BeginMessage("version");
@@ -298,7 +298,7 @@ bool TestNode(const CService &cip, int &ban, int &clientV, std::string &clientSV
 
 /*
 int main(void) {
-  CService ip("bitcoin.sipa.be", 8333, true);
+  CService ip("wispr.sipa.be", 8333, true);
   vector<CAddress> vAddr;
   vAddr.clear();
   int ban = 0;
