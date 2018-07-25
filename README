@@ -19,25 +19,6 @@ REQUIREMENTS
 
 $ sudo apt-get install build-essential libboost-all-dev libssl-dev
 
-USAGE
------
-
-Assuming you want to run a dns seed on dnsseed.example.com, you will
-need an authorative NS record in example.com's domain record, pointing
-to for example vps.example.com:
-
-$ dig -t NS dnsseed.example.com
-
-;; ANSWER SECTION
-dnsseed.example.com.   86400    IN      NS     vps.example.com.
-
-On the system vps.example.com, you can now run dnsseed:
-
-./dnsseed -h dnsseed.example.com -n vps.example.com
-
-If you want the DNS server to report SOA records, please provide an
-e-mail address (with the @ part replaced by .) using -m.
-
 COMPILING
 ---------
 Compiling will require boost and ssl.  On debian systems, these are provided
@@ -46,6 +27,26 @@ by `libboost-dev` and `libssl-dev` respectively.
 $ make
 
 This will produce the `dnsseed` binary.
+
+
+BASIC USAGE/SETUP
+-----
+
+Assuming you want to run a dns seed on seed.MYURL.com, you will
+need an authorative NS record in MYURL.com's domain record, pointing
+to for example vps.MYURL.com:
+
+$ dig -t NS seed.MYURL.com
+
+;; ANSWER SECTION
+seed.MYURL.com.   86400    IN      NS     vps.MYURL.com.
+
+On the system vps.MYURL.com, you can now run dnsseed:
+
+./dnsseed -h seed.MYURL.com -n vps.MYURL.com
+
+If you want the DNS server to report SOA records, please provide an
+e-mail address (with the @ part replaced by .) using -m.
 
 
 RUNNING AS NON-ROOT
@@ -60,3 +61,74 @@ $ iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-port 5353
 
 If properly configured, this will allow you to run dnsseed in userspace, using
 the -p 5353 option.
+
+See also the example at the bottom which gives a working example of how to do this on ubuntu.
+
+
+PERMANENT SETUP
+____
+For a more robust/permanent setup - that auto starts on server reboot.
+
+1) Modify variables in dnsseed_service.sh
+2) sudo cp dnsseed_service.sh /etc/init.d/guldendnsseed
+3) sudo chmod +x /etc/init.d/guldendnsseed
+4) sudo service guldendnsseed start
+5) sudo update-rc.d guldendnsseed defaults
+
+ADDITIONAL SETUP
+________________
+The seeders periodically scan for two files "nodes4.txt" (ipv4); "nodes6.txt" (ipv6). (Plain text files with one ip per line - no port numbering)
+If these files are present, the seeders will use these as an additional source of IPs to feed into the crawler, this can help get better network coverage.
+
+For best seeder performance, it is advised to acquire an external source that can provide such a list of IPs and then use a cronjob to have it periodically place new versions of the lists in these files.
+
+
+EXAMPLE SETUP - RUNNING TWO DNS SEEDS ON ONE UBUNTU SERVER USING TWO IPS (testnet + mainnet)
+__________________________________________________________________
+
+Basic setup to run two DNS seeds from one box (one for mainnet one for testnet)
+Assumes ufw is already set up and enabled.
+Please ensure there is not already a service on port 53 (dnsmasq/avahi) if there is that must first be removed.
+
+
+Assuming two external IPs for the box, with NS records already set up:
+104.233.1.1   seed.example.com vps.example.com
+104.233.1.2   testseed.example.com testvps.example.com
+
+
+Place the following in /etc/ufw/before.rules to forward the incoming traffic to different ports based on the IPs:
+*nat
+:PREROUTING ACCEPT [0:0]
+-F PREROUTING
+-A PREROUTING -d 104.233.1.1 -p udp --dport 53 -j REDIRECT --to-port 5454
+-A PREROUTING -d 104.233.1.1 -p tcp --dport 53 -j REDIRECT --to-port 5454
+-A PREROUTING -d 104.233.1.2 -p udp --dport 53 -j REDIRECT --to-port 5455
+-A PREROUTING -d 104.233.1.2 -p tcp --dport 53 -j REDIRECT --to-port 5455
+COMMIT
+
+
+Allow ports through ufw:
+sudo ufw allow 53 && sudo ufw allow 5454 && sudo ufw allow 5455 && sudo ufw reload
+
+
+Set up init scripts:
+sudo cp dnsseed_service.sh /etc/init.d/guldendns
+sudo cp dnsseed_service.sh /etc/init.d/guldendnstestnet
+
+
+Configure init scripts:
+Open guldendns script and set the variables in it.
+PREFIX1=seed
+PREFIX2=vps
+PORT=5454
+URL=example.com
+Open guldendnstestnet and set the variables in it.
+PREFIX1=testseed
+PREFIX2=testvps
+PORT=5455
+URL=example.com
+Note that you must also set the APPROOT for each of the above, to seperate folders, you will need two copies of the folder one for each app to run in.
+
+
+Finally run the init scripts and wait a while. You can confirm from the inside if everything works by running tail -f on the log file. You can confirm (from the outside)
+if everything works via nslookup.

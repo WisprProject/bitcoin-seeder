@@ -8,8 +8,9 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <atomic>
-
-#include "bitcoin.h"
+#include <iostream>
+#include <fstream>
+#include "gulden.h"
 #include "db.h"
 
 using namespace std;
@@ -71,11 +72,11 @@ public:
         {"testnet", no_argument, &fUseTestNet, 1},
         {"wipeban", no_argument, &fWipeBan, 1},
         {"wipeignore", no_argument, &fWipeBan, 1},
-        {"help", no_argument, 0, '?'},
+        {"help", no_argument, 0, 'h'},
         {0, 0, 0, 0}
       };
       int option_index = 0;
-      int c = getopt_long(argc, argv, "h:n:m:t:p:d:o:i:k:w:?", long_options, &option_index);
+      int c = getopt_long(argc, argv, "h:n:m:t:p:d:o:i:k:w:", long_options, &option_index);
       if (c == -1) break;
       switch (c) {
         case 'h': {
@@ -153,10 +154,7 @@ public:
         filter_whitelist.insert(13);
     }
     if (host != NULL && ns == NULL) showHelp = true;
-    if (showHelp) {
-      fprintf(stderr, help, argv[0]);
-      exit(0);
-    }
+    if (showHelp) fprintf(stderr, help, argv[0]);
   }
 };
 
@@ -186,7 +184,7 @@ extern "C" void* ThreadCrawler(void* data) {
       res.nClientV = 0;
       res.nHeight = 0;
       res.strClientV = "";
-      bool getaddr = res.ourLastSuccess + 3600 < now;
+      bool getaddr = res.ourLastSuccess + 10800 < now;
       res.fGood = TestNode(res.service,res.nBanTime,res.nClientV,res.strClientV,res.nHeight,getaddr ? &addr : NULL);
     }
     db.ResultMany(ips);
@@ -194,6 +192,38 @@ extern "C" void* ThreadCrawler(void* data) {
   } while(1);
   return nullptr;
 }
+
+
+extern "C" void* ThreadStaticIps(void* data) {
+  do {
+
+    std::ifstream fStaticIPs4("nodes4.txt");
+    if (fStaticIPs4.good())
+    {
+	std::string line;
+	while (std::getline(fStaticIPs4, line))
+	{
+	    std::istringstream iss(line);
+            db.Add(CAddress(CService(line+":9231"), true));
+	    //printf("%s", line.c_str());
+	}
+    }
+    std::ifstream fStaticIPs6("nodes6.txt");
+    if (fStaticIPs6.good())
+    {
+        std::string line;
+        while (std::getline(fStaticIPs6, line))
+        {
+            std::istringstream iss(line);
+            db.Add(CAddress(CService(line+":9231"), true));
+        }
+    }
+
+    Sleep(60000 *5);// 5 minutes
+  } while(1);
+  return nullptr;
+}
+
 
 extern "C" int GetIPList(void *thread, char *requestedHostname, addr_t *addr, int max, int ipv4, int ipv6);
 
@@ -334,11 +364,8 @@ int StatCompare(const CAddrReport& a, const CAddrReport& b) {
 }
 
 extern "C" void* ThreadDumper(void*) {
-  int count = 0;
   do {
-    Sleep(100000 << count); // First 100s, than 200s, 400s, 800s, 1600s, and then 3200s forever
-    if (count < 5)
-        count++;
+    Sleep(600000); // 10 minutes
     {
       vector<CAddrReport> v = db.GetAll();
       sort(v.begin(), v.end(), StatCompare);
@@ -507,6 +534,8 @@ int main(int argc, char **argv) {
   pthread_attr_t attr_crawler;
   pthread_attr_init(&attr_crawler);
   pthread_attr_setstacksize(&attr_crawler, 0x20000);
+  pthread_t statthread;
+  pthread_create(&statthread, &attr_crawler, ThreadStaticIps, nullptr);
   for (int i=0; i<opts.nThreads; i++) {
     pthread_t thread;
     pthread_create(&thread, &attr_crawler, ThreadCrawler, &opts.nThreads);
