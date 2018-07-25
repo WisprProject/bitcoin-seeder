@@ -1,5 +1,5 @@
-#ifndef _GULDEN_H_
-#define _GULDEN_H_ 1
+#ifndef _WISPR_H_
+#define _WISPR_H_ 1
 
 #include "protocol.h"
 

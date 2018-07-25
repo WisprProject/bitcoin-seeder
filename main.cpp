@@ -10,7 +10,7 @@
 #include <atomic>
 #include <iostream>
 #include <fstream>
-#include "gulden.h"
+#include "wispr.h"
 #include "db.h"
 
 using namespace std;

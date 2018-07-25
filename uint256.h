@@ -2,8 +2,8 @@
 // Copyright (c) 2011 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
-#ifndef GULDEN_UINT256_H
-#define GULDEN_UINT256_H
+#ifndef WISPR_UINT256_H
+#define WISPR_UINT256_H
 
 #include "serialize.h"
 

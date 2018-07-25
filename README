@@ -1,4 +1,4 @@
-bitcoin-seeder
+wispr-seeder
 ==============
 
 WISPR-seeder is a crawler for the WISPR network, which exposes a list
@@ -70,10 +70,10 @@ ____
 For a more robust/permanent setup - that auto starts on server reboot.
 
 1) Modify variables in dnsseed_service.sh
-2) sudo cp dnsseed_service.sh /etc/init.d/guldendnsseed
-3) sudo chmod +x /etc/init.d/guldendnsseed
-4) sudo service guldendnsseed start
-5) sudo update-rc.d guldendnsseed defaults
+2) sudo cp dnsseed_service.sh /etc/init.d/wisprdnsseed
+3) sudo chmod +x /etc/init.d/wisprdnsseed
+4) sudo service wisprdnsseed start
+5) sudo update-rc.d wisprdnsseed defaults
 
 ADDITIONAL SETUP
 ________________
@@ -112,17 +112,17 @@ sudo ufw allow 53 && sudo ufw allow 5454 && sudo ufw allow 5455 && sudo ufw relo
 
 
 Set up init scripts:
-sudo cp dnsseed_service.sh /etc/init.d/guldendns
-sudo cp dnsseed_service.sh /etc/init.d/guldendnstestnet
+sudo cp dnsseed_service.sh /etc/init.d/wisprdns
+sudo cp dnsseed_service.sh /etc/init.d/wisprdnstestnet
 
 
 Configure init scripts:
-Open guldendns script and set the variables in it.
+Open wisprdns script and set the variables in it.
 PREFIX1=seed
 PREFIX2=vps
 PORT=5454
 URL=example.com
-Open guldendnstestnet and set the variables in it.
+Open wisprdnstestnet and set the variables in it.
 PREFIX1=testseed
 PREFIX2=testvps
 PORT=5455
