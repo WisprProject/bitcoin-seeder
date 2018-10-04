@@ -427,13 +427,13 @@ extern "C" void* ThreadStats(void*) {
   return nullptr;
 }
 
-static const string mainnet_seeds[] = {"dnsseed.wispr.tech", "main.wispr-seeds.nl", "54.229.67.146", ""};
+static const string mainnet_seeds[] = {"dnsseed.wispr.tech", "main.wispr-seeds.nl", "18.202.248.193", ""};
 static const string testnet_seeds[] = {"testnet-seed.wispr.tech", "test.wispr-seeds.nl" ,""};
 static const string *seeds = mainnet_seeds;
 
 extern "C" void* ThreadSeeder(void*) {
   if (!fTestNet){
-    db.Add(CService("54.229.67.146", 17000), true);
+    db.Add(CService("18.202.248.193", 17000), true);
   }
   do {
     for (int i=0; seeds[i] != ""; i++) {
